@@ -1,0 +1,16 @@
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] POST   /api/v1/user/sign_msg     --> eli/app/frontend/controller/user.GetSignMsg (6 handlers)
+[GIN-debug] POST   /api/v1/user/login        --> eli/app/frontend/controller/user.Login (6 handlers)
+[GIN-debug] GET    /api/v1/user/login_user_info --> eli/app/frontend/controller/user.LoginUserInfo (6 handlers)
+[GIN-debug] POST   /api/v1/user/handle_google_callback --> eli/app/frontend/controller/user.HandleGoogleCallback (6 handlers)
+[GIN-debug] GET    /api/v1/eli/calculateFourPillars --> eli/app/frontend/controller/eli.CalculateFourPillars (6 handlers)
+[GIN-debug] POST   /api/v1/eli/calculateShenKe --> eli/app/frontend/controller/eli.CalculateShenKe (6 handlers)
+[GIN-debug] GET    /api/v1/ws/chat           --> eli/app/frontend/controller/chat.Chat (3 handlers)
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :8088
