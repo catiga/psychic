@@ -32,9 +32,9 @@ func main() {
 	// fmt.Println("Response:", response)
 
 	//查询指定任务
-	chaxunFinetuning("ftjob-pfcubpjwugAsPiWSDPTWs8cT")
+	// chaxunFinetuning("ftjob-pfcubpjwugAsPiWSDPTWs8cT")
 
-	// jiansuo("file-FNs6jfRhrquM8CAT9wEaU4z3", "./xunlian.jsonl")
+	// jiansuo("file-ZpHroikB3XI228ilekZ0QYpF", "./xunlian.jsonl")
 }
 
 // 上传训练文件

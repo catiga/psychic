@@ -16,7 +16,7 @@ chains:
 google: 
   clientId: 890462275164-cutk7ea593vqqv5i12rq0q4gsbnufed1.apps.googleusercontent.com
 openai:
-  apikey: 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
+  apikey: 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
 env:
   log: /log
   en_i818: locales/en.json

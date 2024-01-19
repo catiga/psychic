@@ -139,7 +139,8 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 
 	defaultModelKey := config.Get().Openai.Apikey
 	// defaultModelName := openai.GPT3Dot5Turbo
-	defaultModelName := "ft:gpt-3.5-turbo-1106:swft-blockchain::8huoNTCU"
+	defaultModelName := "ft:gpt-3.5-turbo-1106:swft-blockchain::8icpgPrw"
+	// defaultModelName := "ft:gpt-3.5-turbo-1106:swft-blockchain::8huoNTCU"
 	// defaultModelName := "ft:gpt-3.5-turbo-1106:swft-blockchain::8gvKsQhx"
 	// defaultModelName := "ft:gpt-3.5-turbo-1106:swft-blockchain::8hCA5SFh"
 
