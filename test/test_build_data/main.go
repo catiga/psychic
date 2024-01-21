@@ -6,6 +6,7 @@ import (
 	"eli/database"
 	"eli/util"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -39,19 +40,31 @@ type ChatExample struct {
 }
 
 func main() {
+	cmd := flag.String("cmd", "", "")
+	f := flag.String("f", "", "")
+	flag.Parse()
+
+	if len(*cmd) == 0 {
+		fmt.Println("please input exe cmd...")
+		return
+	}
+	if *cmd != "parse" && *cmd != "build" {
+		fmt.Println("unrecognized exe cmd...")
+		return
+	}
 
 	// calculateInput("甲巳寅寅")
 	// return
 	// 打开 JSON 文件
-	file, err := os.Open("training_data.json")
+	dataFile, err := os.Open(*f)
 	if err != nil {
 		fmt.Println("无法打开文件:", err)
 		return
 	}
-	defer file.Close()
+	defer dataFile.Close()
 
 	// 读取 JSON 文件内容
-	byteValue, _ := io.ReadAll(file)
+	byteValue, _ := io.ReadAll(dataFile)
 
 	// 解析 JSON 数据
 	var data Data
@@ -61,7 +74,7 @@ func main() {
 		return
 	}
 
-	file, err = os.OpenFile("output.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, err := os.OpenFile("output.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
@@ -73,11 +86,16 @@ func main() {
 
 	for _, item := range data.Data {
 		// fmt.Println("Input:", item.Input)
-
 		inputs := strings.Split(item.Input, "|")
 
-		fmt.Println("Input:", inputs[0])
+		tmpInt := fmt.Sprint("Input:", inputs[0], " ", strings.Trim(inputs[1], " "))
 		promot, _ := calculateInput(inputs[0])
+
+		if *cmd == "parse" {
+			fmt.Println(tmpInt)
+			fmt.Println("   %S", promot)
+			continue
+		}
 
 		// fmt.Println("promot:", promot)
 		// fmt.Println("现在需要", strings.TrimSpace(inputs[1]))

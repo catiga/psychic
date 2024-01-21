@@ -14,8 +14,8 @@ func init() {
 	// 初始化国际化资源束
 	bundle = i18n.NewBundle(language.English)
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
-	bundle.MustLoadMessageFile(config.Get().Env.En_i818)
-	bundle.MustLoadMessageFile(config.Get().Env.Zh_cn_i818)
+	bundle.LoadMessageFile(config.Get().Env.En_i818)
+	bundle.LoadMessageFile(config.Get().Env.Zh_cn_i818)
 	// bundle.MustLoadMessageFile("locales/zh_tw.json")
 }
 

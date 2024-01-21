@@ -16,7 +16,7 @@ chains:
 google: 
   clientId: 890462275164-cutk7ea593vqqv5i12rq0q4gsbnufed1.apps.googleusercontent.com
 openai:
-  apikey: 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
+  apikey: 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
 env:
   log: /Users/wanggaowei/git/eli/log/
   en_i818: /Users/wanggaowei/git/eli/locales/en.json
