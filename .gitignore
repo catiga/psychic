@@ -1,4 +1,5 @@
 eli-serv
 ./log
 
-./config/*.yml
+config/dev.yml
+config/pro.yml
