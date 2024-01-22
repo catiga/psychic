@@ -3,3 +3,5 @@ eli-serv
 
 config/dev.yml
 config/pro.yml
+
+__debug_bin

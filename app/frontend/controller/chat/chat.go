@@ -138,8 +138,10 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 	}
 
 	defaultModelKey := config.Get().Openai.Apikey
+	fmt.Println("open ai key:", defaultModelKey)
 	// defaultModelName := openai.GPT3Dot5Turbo
 	defaultModelName := "ft:gpt-3.5-turbo-1106:swft-blockchain::8icpgPrw"
+	// defaultModelName := openai.GPT4
 	// defaultModelName := "ft:gpt-3.5-turbo-1106:swft-blockchain::8huoNTCU"
 	// defaultModelName := "ft:gpt-3.5-turbo-1106:swft-blockchain::8gvKsQhx"
 	// defaultModelName := "ft:gpt-3.5-turbo-1106:swft-blockchain::8hCA5SFh"
@@ -192,7 +194,7 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 
 	stream, err := c.CreateChatCompletionStream(ctx, req)
 	if err != nil {
-		log.Println("ChatCompletionStream error:", err)
+		log.Println("ChatCompletionStream error111:", err)
 
 		rp := makeReply(common.CODE_ERR_GPT_COMPLETE, err.Error(), timeNowHs, "", request.Timestamp, "")
 
@@ -201,7 +203,9 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 	}
 	defer stream.Close()
 
-	log.Println("Stream response: ")
+	// rp := makeReply(common.CODE_ERR_GPT_COMPLETE, "err.Error()", timeNowHs, "", request.Timestamp, "")
+	// ws.WriteJSON(rp)
+	// return
 
 	chatHash := generateChatHash(timeNowHs, request)
 
@@ -287,7 +291,7 @@ func buildPrompt(chars *model.SpwCharacter, chatType string, request common.Requ
 		var result_1 []model.SpwChat
 		db.Where("id IN (?)", ids).Order("add_time desc").Find(&result_1)
 
-		tokenLimit := 8192 - 10                       // 设定令牌限制
+		// tokenLimit := 8192 - 10                       // 设定令牌限制
 		currentLength := len("Q:`" + question + "`;") // 计算问题长度
 		currentLength += len(frontPromot + ";")       // 计算问题长度
 
@@ -304,17 +308,27 @@ func buildPrompt(chars *model.SpwCharacter, chatType string, request common.Requ
 			log.Println("find appendix user data:", len(result_1), ids, " and start to build question background")
 			for _, v := range result_1 {
 
-				q := "Q:`" + v.Question + "`;A:`" + v.Reply + "` \n"
-				if currentLength+len(question) > tokenLimit {
-					break // 当累积长度超过限制时停止添加
-				}
-				backgroundContext += q
-				currentLength += len(q)
+				// q := "Q:`" + v.Question + "`;A:`" + v.Reply + "` \n"
+				// if currentLength+len(question) > tokenLimit {
+				// 	break // 当累积长度超过限制时停止添加
+				// }
+				// backgroundContext += q
+				// currentLength += len(q)
+
+				back = append(back, openai.ChatCompletionMessage{
+					Role:    "user",
+					Content: v.Question,
+				})
+				back = append(back, openai.ChatCompletionMessage{
+					Role:    "assistant",
+					Content: v.Reply,
+				})
 			}
 		}
 	}
 
 	backgroundContext += "背景: " + frontPromot + ";"
+	log.Println("打印用户问题：", question, frontPromot)
 
 	backgroundContext += "Q:`" + question + "`;"
 
@@ -511,7 +525,7 @@ func buildSwxy(calId string) (string, error) {
 
 	//时间四柱的角色，年柱代表长辈，领导，国家；月柱代表兄弟姐妹，竞争对手，朋友，同事；日柱代表关系近的朋友，配偶，自己；时柱代表子女，晚辈，下属
 
-	prompt += "; 回答问题的时候，不要带A:``,不要出现太多重复的话语，只输出和内容有关的;现在我的问题是: "
+	prompt += ";现在我的问题是: "
 
 	ml.Log.Info("prompt :", prompt)
 
