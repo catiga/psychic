@@ -1,6 +1,7 @@
 package router
 
 import (
+	"eli/app/frontend/controller/dis"
 	"eli/app/frontend/controller/eli"
 	"eli/app/frontend/controller/user"
 	"eli/interceptor"
@@ -21,6 +22,10 @@ func Load(r *gin.RouterGroup) {
 	eliGroup := r.Group("/eli", interceptor.LoggerMiddleware(), interceptor.FrontendSignMiddleware(), interceptor.FrontendAuthMiddleware())
 	eliGroup.GET("/calculateFourPillars", eli.CalculateFourPillars)
 	eliGroup.POST("/calculateShenKe", eli.CalculateShenKe)
+
+	disGroup := r.Group("/dis", interceptor.LoggerMiddleware(), interceptor.FrontendSignMiddleware(), interceptor.FrontendAuthMiddleware())
+	disGroup.POST("/check_white", dis.CheckWhite)
+	disGroup.POST("/get_maker_proof", dis.GetMakerProof)
 
 	wsGroup := r.Group("/ws")
 

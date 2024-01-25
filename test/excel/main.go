@@ -39,6 +39,24 @@ func main() {
 			}
 
 		}
+
+		if sheet.Name == "五行象意" {
+			// 遍历每一行
+			for _, row := range sheet.Rows {
+				param := make(map[string]string)
+
+				param["r1"] = row.Cells[0].String()
+				param["r2"] = row.Cells[1].String()
+				param["r3"] = row.Cells[2].String()
+				param["r4"] = row.Cells[3].String()
+				// param["r5"] = row.Cells[4].String()
+
+				fmt.Println(fmt.Sprintf(" insert into eli_swfl(renyun,guishen,shenjiang,difen,type) values ('%s','%s','%s','%s','%s');", param["r1"], param["r2"], param["r3"]))
+
+				params = append(params, param)
+			}
+
+		}
 	}
 
 	jsonString, err := json.Marshal(params)

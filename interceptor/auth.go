@@ -17,7 +17,7 @@ import (
 
 const SIGN_SALT = "202cb962ac5907sdfdsdb07152d234b70"
 
-var userLoginException = []string{"/api/v1/user/sign_msg", "/api/v1/user/login", "/api/v1/user/handle_google_callback", "/api/v1/eli/*", "/api/v1/ws/*"}
+var userLoginException = []string{"/api/v1/user/sign_msg", "/api/v1/user/login", "/api/v1/user/handle_google_callback", "/api/v1/eli/*", "/api/v1/ws/*", "/api/v1/dis/*"}
 var signException = []string{}
 
 func FrontendSignMiddleware() gin.HandlerFunc {
