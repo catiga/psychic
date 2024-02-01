@@ -2,7 +2,6 @@ package dis
 
 import (
 	"fmt"
-	"math/big"
 	"net/http"
 	"strings"
 
@@ -38,13 +37,22 @@ func GetMakerProof(c *gin.Context) {
 	lang := c.GetHeader("I18n-Language")
 	address := c.PostForm("address")
 
+	fmt.Println("address:", address)
+
 	if len(address) != 42 {
 		c.JSON(http.StatusOK, ml.Fail(lang, "100014"))
 		return
 	}
+
 	db := database.DB
 
 	var airdrop model.DisAirdrop
+	db.Where(" address = ? ", address).First(&airdrop)
+
+	if airdrop == (model.DisAirdrop{}) {
+		c.JSON(http.StatusOK, ml.Fail(lang, "100015"))
+		return
+	}
 
 	var airdrops []model.DisAirdrop
 
@@ -58,7 +66,9 @@ func GetMakerProof(c *gin.Context) {
 
 	for _, air := range airdrops {
 
-		v := util.EncodePackAirdorp(air.Address, big.NewInt(int64(air.Amount)))
+		fmt.Println(air.Address, air.Amount.BigInt())
+
+		v := util.EncodePackAirdorp(air.Address, air.Amount.BigInt())
 
 		// contentData = append(contentData, []byte(v+"\n")...)
 
@@ -68,10 +78,6 @@ func GetMakerProof(c *gin.Context) {
 		})
 
 		if strings.EqualFold(air.Address, address) {
-			// leafT := eth.Keccak256Hash(hexutil.MustDecode(v)).Hex()
-			// fmt.Println("aa: ", leafT)
-
-			airdrop = air
 			custLeaf = util.DefaultCont{Data: v}
 		}
 	}
@@ -84,22 +90,9 @@ func GetMakerProof(c *gin.Context) {
 
 	fmt.Println(merklePath, index, err)
 
-	b, _ := tree.VerifyContent(custLeaf)
+	// b, _ := tree.VerifyContent(custLeaf)
 
-	fmt.Println("b===========:", b)
+	// fmt.Println("b===========:", b)
 
 	c.JSON(http.StatusOK, ml.Succ(lang, map[string]interface{}{"airdrop": airdrop, "proof": merklePath}))
-
-	// fmt.Println(merklePath, index, err)
-
-	// a2tmp, err := decimal.NewFromString("6666664497663742508244")
-
-	// leaf := encodePack("0x39f0357140C66629E3640cc767F6F18b4A4D6a33", a2tmp.BigInt())
-	// leafT := eth.Keccak256Hash(hexutil.MustDecode(leaf)).Hex()
-	// fmt.Println(leafT)
-
-	// some := DefaultCont{Data: leaf}
-	// s1, s2, err := tree.GetMerklePathHex(some)
-	// fmt.Println(s1, s2, err)
-
 }
