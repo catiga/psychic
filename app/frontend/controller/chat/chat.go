@@ -292,8 +292,8 @@ func buildPrompt(chars *model.SpwCharacter, chatType string, request common.Requ
 		db.Where("id IN (?)", ids).Order("add_time desc").Find(&result_1)
 
 		// tokenLimit := 8192 - 10                       // 设定令牌限制
-		currentLength := len("Q:`" + question + "`;") // 计算问题长度
-		currentLength += len(frontPromot + ";")       // 计算问题长度
+		currentLength := len(question)          // 计算问题长度
+		currentLength += len(frontPromot + ";") // 计算问题长度
 
 		// 取最近的三条聊天记录
 		// result_recent := findRecentChats(3, request.DevId, uint64(request.UserId), request.CalId, chars)
@@ -328,38 +328,11 @@ func buildPrompt(chars *model.SpwCharacter, chatType string, request common.Requ
 	}
 
 	backgroundContext += "背景: " + frontPromot + ";"
-	log.Println("打印用户问题：", question, frontPromot)
+	backgroundContext += "\n" + question
+	log.Println("打印用户背景问题：", backgroundContext)
 
-	backgroundContext += "Q:`" + question + "`;"
-
-	// log.Println("开始构建角色设定：", len(result))
-
-	// if len(result) > 0 {
-	// 	for _, v := range result {
-	// 		log.Println(v.Role, v.Prompt)
-	// 		roleType := ""
-	// 		if v.Role == "system" {
-	// 			roleType = openai.ChatMessageRoleSystem
-	// 			back = append(back, openai.ChatCompletionMessage{
-	// 				Role:    roleType,
-	// 				Content: v.Prompt,
-	// 			})
-	// 		} else if v.Role == "assistant" {
-	// 			back = append(back, openai.ChatCompletionMessage{
-	// 				Role:    openai.ChatMessageRoleUser,
-	// 				Content: v.Prompt,
-	// 			})
-	// 			back = append(back, openai.ChatCompletionMessage{
-	// 				Role:    openai.ChatMessageRoleAssistant,
-	// 				Content: v.Answer,
-	// 			})
-	// 		} else if v.Role == "user" {
-	// 			roleType = openai.ChatMessageRoleUser
-	// 		}
-	// 	}
-	// }
 	if len(backgroundContext) > 0 {
-		backgroundContext = "Context: \n" + backgroundContext + "\n"
+		backgroundContext = "背景信息: \n" + backgroundContext + "\n"
 	}
 	log.Println("Question with Context:", backgroundContext)
 	back = append(back, openai.ChatCompletionMessage{
@@ -453,65 +426,74 @@ func buildSwxy(calId string) (string, error) {
 
 	var prompt string
 
-	prompt += " 这是我的【起课】信息，"
+	prompt += "本次【金口诀起课】信息如下：\n"
 
 	for i, dzgx := range resultData.EliDzgxs {
 		if i == 0 {
-			prompt += " 当前地支关系包含: \n"
+			prompt += "地支关系为:"
 		}
-		prompt += dzgx.Name + "，那么象意对应 " + dzgx.Gxxy + "。\n"
+		prompt += dzgx.Name + "，那么象意对应 " + dzgx.Gxxy + ";"
+	}
+	prompt += "\n"
+
+	//四位分类
+	prompt += "将人元、贵神、神将、地分定义为四位，四位在不同的情况下，所代表意义如下:"
+	for _, eliSwfl := range resultData.EliSwfls {
+		if resultData.Shen == "人元" {
+			prompt += fmt.Sprintf("在%s中，人元代表%s;", eliSwfl.Type, eliSwfl.Renyuan)
+		} else if resultData.Shen == "贵神" {
+			prompt += fmt.Sprintf("在%s中，贵神代表%s;", eliSwfl.Type, eliSwfl.Guishen)
+		} else if resultData.Shen == "神将" {
+			prompt += fmt.Sprintf("在%s中，神将代表%s;", eliSwfl.Type, eliSwfl.Shenjiang)
+		} else if resultData.Shen == "地分" {
+			prompt += fmt.Sprintf("在%s中，地分代表%s;", eliSwfl.Type, eliSwfl.Difen)
+		}
+	}
+	prompt += "\n"
+
+	if len(resultData.Shen) > 0 {
+		prompt += "当需要断事时以" + resultData.Shen + "位置为入手分析不同位置的关系。"
 	}
 
 	for i, swxy := range resultData.Swxys {
-
 		if i == 0 {
-			prompt += " 四位包含这些关系:\n"
+			prompt += "四位关系为:"
 		}
-
-		prompt += swxy.R1 + "生" + swxy.R2 + "，那么对于" + swxy.Type + " 则 " + swxy.Des + "。\n"
+		prompt += swxy.R1 + "生" + swxy.R2 + "，那么对于" + swxy.Type + " 则 " + swxy.Des + ";"
 	}
+	prompt += "\n"
+
+	prompt += "五行的象意参考为:\n"
+	prompt += `
+	金:	代表白色，西方，辛辣，秋天，呼吸系统，筋骨，肺部分忧伤，仁义，公正，原则、法律、霸道、阻碍、改革，精细，收敛，威严，强硬，矛盾，坚硬
+	木:	绿色、青色，东方，酸的，春天，肝胆，神经，筋骨，生气，仁慈，尊重，同情，耿直，发展，延伸，突破，积极，有根基，纠缠，正义，高贵 ，直接
+	水:	黑色，北方，咸味，冬天，肾脏，泌尿系统，膀胱，恐吓，惊吓，聪明，有智慧，聪明好动，随遇而安，没有形状，滚动，桃花，是非，胆子小，积蓄，储备，向下，湿润，向下，寒凉，困境，低谷，随遇而安
+	火:	红色，男方，苦，夏天，喜悦，心脏，血液，炎症，懂礼数，有礼貌，快速，表现，表演，玩乐，娱乐，变化，想法多，热情，有脾气，有灵感，顶峰，向上，虚幻，虚荣，热的，证书、证件、文书、信息
+	土:	黄色，中间，甜的，仲季，脾胃，消化系统，思念，诚信，包容，有责任，不灵活，保守，转化，可以克服的障碍，房屋，资产，收纳，承载，保障，缓慢
+	`
+	prompt += "\n"
 
 	//四位五行
-
 	if len(resultData.EliSwwxs) > 0 {
 		// 四位五行
-		prompt += " 在四位五行中，"
+		prompt += "四位五行中:"
 		for _, eliSwwx := range resultData.EliSwwxs {
 			if len(eliSwwx.Health) == 0 {
-				prompt += fmt.Sprintf("有%d个%s,在断事方面，%s", eliSwwx.Num, eliSwwx.Wuxing, eliSwwx.AssessingMatters+" \n")
+				prompt += fmt.Sprintf("有%d个%s,在断事方面，%s", eliSwwx.Num, eliSwwx.Wuxing, eliSwwx.AssessingMatters+";")
 			} else {
-				prompt += fmt.Sprintf("有%d个%s,在断事方面，%s,在健康方面，%s。", eliSwwx.Num, eliSwwx.Wuxing, eliSwwx.AssessingMatters, eliSwwx.Health+" \n")
+				prompt += fmt.Sprintf("有%d个%s,在断事方面，%s,在健康方面，%s。", eliSwwx.Num, eliSwwx.Wuxing, eliSwwx.AssessingMatters, eliSwwx.Health+";")
 			}
 		}
 	}
+	prompt += "\n"
 
 	if len(resultData.EliWxws) > 0 {
 		// 五行旺衰
 		for _, eliWxw := range resultData.EliWxws {
-
-			prompt += fmt.Sprintf("%s属性%s,性格特点是%s", eliWxw.Wuxing, eliWxw.Type, eliWxw.PersonalityTrait)
-
+			prompt += fmt.Sprintf("%s属性%s,性格特点是%s;", eliWxw.Wuxing, eliWxw.Type, eliWxw.PersonalityTrait)
 		}
 	}
-
-	//四位分类
-	prompt += "; 四位在不同的情况下，所代表的如下:"
-	for _, eliSwfl := range resultData.EliSwfls {
-
-		if resultData.Shen == "人元" {
-			prompt += fmt.Sprintf("在%s中，人元代表%s ;", eliSwfl.Type, eliSwfl.Renyuan)
-		} else if resultData.Shen == "贵神" {
-			prompt += fmt.Sprintf("在%s中，贵神代表%s ;", eliSwfl.Type, eliSwfl.Guishen)
-		} else if resultData.Shen == "神将" {
-			prompt += fmt.Sprintf("在%s中，神将代表%s ;", eliSwfl.Type, eliSwfl.Shenjiang)
-		} else if resultData.Shen == "地分" {
-			prompt += fmt.Sprintf("在%s中，地分代表%s ;", eliSwfl.Type, eliSwfl.Difen)
-		}
-	}
-
-	if len(resultData.Shen) > 0 {
-		prompt += "断事用 " + resultData.Shen + " 的所代表位置。"
-	}
+	prompt += "\n"
 
 	if len(resultData.Rumu) > 0 {
 		// 入墓 入墓象义  发挥不出来，不能动，控制，受限制
@@ -524,8 +506,8 @@ func buildSwxy(calId string) (string, error) {
 	}
 
 	//时间四柱的角色，年柱代表长辈，领导，国家；月柱代表兄弟姐妹，竞争对手，朋友，同事；日柱代表关系近的朋友，配偶，自己；时柱代表子女，晚辈，下属
-
-	prompt += ";现在我的问题是: "
+	prompt += "在回答问题的时候要根据上面的背景信息，按分类输出分析结果，并且尽可能携带流年信息。\n"
+	prompt += "用中文回答问题。\n现在我的问题是: "
 
 	ml.Log.Info("prompt :", prompt)
 

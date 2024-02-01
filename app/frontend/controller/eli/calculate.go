@@ -92,10 +92,10 @@ func CalculateShenKe(c *gin.Context) {
 			fmt.Printf("%s 和 %s 的关系是：%s\n", wuxings[i], wuxings[j], relationship)
 			var tmpEliSwxys []model.EliSwxy
 			if sx == 1 {
-				db.Where(" r1 = ? and r2 = ? and relationship = ? ", getSxValue(i), getSxValue(j), relationship).Find(&tmpEliSwxys)
+				db.Where(" r1 = ? and r2 = ? and relationship = ? and flag = ?", getSxValue(i), getSxValue(j), relationship, 0).Find(&tmpEliSwxys)
 
 			} else {
-				db.Where(" r1 = ? and r2 = ? and relationship = ? ", getSxValue(j), getSxValue(i), relationship).Find(&tmpEliSwxys)
+				db.Where(" r1 = ? and r2 = ? and relationship = ? and flag = ?", getSxValue(j), getSxValue(i), relationship, 0).Find(&tmpEliSwxys)
 			}
 			eliSwxys = append(eliSwxys, tmpEliSwxys...)
 		}

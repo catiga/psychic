@@ -14,6 +14,7 @@ type EliSwxy struct {
 	Relationship string `gorm:"column:relationship;comment:生 克 同" json:"relationship"` // 生 克 同
 	Des          string `gorm:"column:des" json:"des"`
 	Type         string `gorm:"column:type" json:"type"`
+	Flag 		int
 }
 
 // TableName EliSwxy's table name
