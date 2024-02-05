@@ -24,6 +24,7 @@ func Load(r *gin.RouterGroup) {
 	eliGroup.POST("/calculateShenKe", eli.CalculateShenKe)
 	eliGroup.POST("/fl", eli.Fl)
 	eliGroup.POST("/web3/coinList", eli.CoinList)
+	eliGroup.POST("/sys/catalog", eli.Catalog)
 
 	disGroup := r.Group("/dis", interceptor.LoggerMiddleware(), interceptor.FrontendSignMiddleware(), interceptor.FrontendAuthMiddleware())
 	disGroup.POST("/check_white", dis.CheckWhite)
