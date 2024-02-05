@@ -220,6 +220,16 @@ func CalculateShenKe(c *gin.Context) {
 	c.JSON(http.StatusOK, ml.Succ(lang, map[string]interface{}{"cal_id": eliCalInfo.ID}))
 }
 
+func Catalog(c *gin.Context) {
+	lang := c.GetHeader("I18n-Language")
+
+	var cats []model.SysCatalog
+	db := database.DB
+	db.Model(&model.SysCatalog{}).Find(&cats)
+
+	c.JSON(http.StatusOK, ml.Succ(lang, cats))
+}
+
 func getSxValue(index int) string {
 	switch index {
 	case 0:
