@@ -41,4 +41,5 @@ type Request struct {
 	UserId    int64  `json:"userid"`
 	Data      string `json:"data"`
 	CalId     string `json:"calid"`
+	QType     string `json:"qtype"`
 }
