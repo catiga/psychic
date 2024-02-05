@@ -158,6 +158,11 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 	background := buildPrompt(&character, chatType, request, question, frontPromot)
 	defaultTemp := 0.5
 
+	if character.CharNature > 0 && character.CharNature <= 200 {
+		defaultTemp = float64(character.CharNature) / 100
+	}
+	fmt.Println("当前角色的温度设定：", defaultTemp)
+
 	// if character.CharNature >= 0 && character.CharNature <= 100 {
 	// 	vs := float64(character.CharNature) / 100
 	// 	defaultTemp = math.Round(vs*10) / 10
