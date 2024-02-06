@@ -55,8 +55,8 @@ func TestReadImport(t *testing.T) {
 		if len(arrItem[3]) > 0 {
 			data = append(data, model.EliSwxy{
 				R1:           arrItem[0],
-				R2:           arrItem[1],
-				Relationship: arrItem[2],
+				R2:           arrItem[2],
+				Relationship: arrItem[1],
 				Des:          arrItem[3],
 				Type:         arrItem[4],
 				Flag:         0,

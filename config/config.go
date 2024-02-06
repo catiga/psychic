@@ -56,7 +56,7 @@ func init() {
 	if env == "production" {
 		viper.SetConfigFile("./config/pro.yml")
 	} else {
-		viper.SetConfigFile("../config/dev.yml")
+		viper.SetConfigFile("./config/dev.yml")
 	}
 
 	viper.SetConfigType("yml")

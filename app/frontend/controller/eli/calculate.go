@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -62,6 +63,20 @@ func CalculateShenKe(c *gin.Context) {
 	token := c.GetHeader("token")
 	session, _ := util.ParseToken(token)
 
+	qtypeStr := c.PostForm("qtype")
+	qtype, err := strconv.ParseInt(qtypeStr, 10, 64)
+	if err != nil {
+		// 处理错误
+		qtype = 0
+	}
+
+	db := database.DB
+
+	var sysCat model.SysCatalog
+	if qtype > 0 {
+		db.Model(&model.SysCatalog{}).Where("id=?", qtype).First(&sysCat)
+	}
+
 	//新增参数 空亡   空亡概念 ，没准备好，没有，心里没底，还没发生
 	//新增参数 入墓 入墓象义  发挥不出来，不能动，控制，受限制
 	//新增参数时间四柱 calculateFourPillars 的角色 对应 年柱代表长辈，领导，国家；月柱代表兄弟姐妹，竞争对手，朋友，同事；日柱代表关系近的朋友，配偶，自己；时柱代表子女，晚辈，下属
@@ -74,8 +89,6 @@ func CalculateShenKe(c *gin.Context) {
 	wuxings := myform.CalElements(dizhis)
 	// wangshuais := wangxiang(wuxings)
 	wangshuais := myform.CalProsDec(wuxings)
-
-	db := database.DB
 
 	// 定义查询出来的基础象意数据
 	var eliSwxys []model.EliSwxy
@@ -91,12 +104,28 @@ func CalculateShenKe(c *gin.Context) {
 			relationship, sx := myform.CalculateWuxingRelationship(wuxings[i], wuxings[j])
 			fmt.Printf("%s 和 %s 的关系是：%s\n", wuxings[i], wuxings[j], relationship)
 			var tmpEliSwxys []model.EliSwxy
-			if sx == 1 {
-				db.Where(" r1 = ? and r2 = ? and relationship = ? and flag = ?", getSxValue(i), getSxValue(j), relationship, 0).Find(&tmpEliSwxys)
+			sxVal_i := getSxValue(i)
+			sxVal_j := getSxValue(j)
 
+			sql := "r1 = ? and r2 = ? and relationship = ? and flag = ?"
+			params := make([]interface{}, 0)
+
+			if sx == 1 {
+				params = append(params, sxVal_i)
+				params = append(params, sxVal_j)
+				// db.Where(sql, sxVal_i, sxVal_j, relationship, 0).Find(&tmpEliSwxys)
 			} else {
-				db.Where(" r1 = ? and r2 = ? and relationship = ? and flag = ?", getSxValue(j), getSxValue(i), relationship, 0).Find(&tmpEliSwxys)
+				params = append(params, sxVal_j)
+				params = append(params, sxVal_i)
+				// db.Where(sql, sxVal_j, sxVal_i, relationship, 0).Find(&tmpEliSwxys)
 			}
+			params = append(params, relationship)
+			params = append(params, 0)
+			if sysCat.ID > 0 {
+				sql = sql + " and type=?"
+				params = append(params, sysCat.NameCn)
+			}
+			db.Where(sql, params...).Find(&tmpEliSwxys)
 			eliSwxys = append(eliSwxys, tmpEliSwxys...)
 		}
 	}
@@ -133,7 +162,14 @@ func CalculateShenKe(c *gin.Context) {
 	}
 
 	//查询出四位对应的角色
-	db.Find(&eliSwfls)
+	sql := "type = ?"
+	flParams := make([]interface{}, 0)
+	flParams = append(flParams, "0")
+	if sysCat.ID > 0 {
+		sql = sql + " or type = ?"
+		flParams = append(flParams, sysCat.NameCn)
+	}
+	db.Model(&model.EliSwfl{}).Where(sql, flParams...).Find(&eliSwfls)
 
 	//用神判定 传入干支 返回 对应的索引 -1 就是失败,小于等于3就是对应人元、贵神、神将、地分
 	yongshens := []string{"人元", "贵神", "神将", "地分"}
@@ -191,7 +227,7 @@ func CalculateShenKe(c *gin.Context) {
 	}
 
 	xchzSql = xchzSql[:(len(xchzSql)-1)] + ")"
-	err := db.Model(&model.EliDzgx{}).Where(xchzSql, params...).Find(&eliDzgxs).Error
+	err = db.Model(&model.EliDzgx{}).Where(xchzSql, params...).Find(&eliDzgxs).Error
 	fmt.Println(err)
 
 	fmt.Println(eliSwxys, eliDzgxs, eliSwwxs, eliWxws)
