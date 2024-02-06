@@ -11,9 +11,22 @@ type SysCatalog struct {
 	ID       int64  `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
 	NameCn   string `gorm:"column:name_cn" json:"name_cn"`
 	NameCode string `gorm:"column:name_code" json:"name_code"`
+	Flag 	 int 	`gorm:"column:flag" json:"flag"`
 }
 
 // TableName SysCatalog's table name
 func (*SysCatalog) TableName() string {
 	return TableNameSysCatalog
+}
+
+type SysPreQuestion struct {
+	ID       int64  `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	Content   string `gorm:"column:content" json:"content"`
+	Desc string `gorm:"column:desc" json:"desc"`
+	CatId string `gorm:"column:cat_id" json:"cat_id"`
+	Flag 	 int 	`gorm:"column:flag" json:"flag"`
+}
+
+func (*SysPreQuestion) TableName() string {
+	return "sys_pre_question"
 }

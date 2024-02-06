@@ -225,9 +225,20 @@ func Catalog(c *gin.Context) {
 
 	var cats []model.SysCatalog
 	db := database.DB
-	db.Model(&model.SysCatalog{}).Find(&cats)
+	db.Model(&model.SysCatalog{}).Where("flag=?", 0).Find(&cats)
 
 	c.JSON(http.StatusOK, ml.Succ(lang, cats))
+}
+
+func PrepareQuestion(c *gin.Context) {
+	lang := c.GetHeader("I18n-Language")
+	qtype := c.Query("qtype")
+
+	var ques []model.SysPreQuestion
+	db := database.DB
+
+	db.Model(&model.SysPreQuestion{}).Where("flag=? and cat_id", 0, qtype).Limit(4).Find(&ques)
+	c.JSON(http.StatusOK, ml.Succ(lang, ques))
 }
 
 func getSxValue(index int) string {
