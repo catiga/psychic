@@ -268,13 +268,27 @@ func Catalog(c *gin.Context) {
 
 func PrepareQuestion(c *gin.Context) {
 	lang := c.GetHeader("I18n-Language")
-	qtype := c.Query("qtype")
+	qtypeStr := c.PostForm("qtype")
+
+	qtype, err := strconv.ParseInt(qtypeStr, 10, 64)
 
 	var ques []model.SysPreQuestion
+	quesList := make([]string, 0)
+
+	if err != nil {
+		c.JSON(http.StatusOK, ml.Succ(lang, quesList))
+		return
+	}
+
 	db := database.DB
 
-	db.Model(&model.SysPreQuestion{}).Where("flag=? and cat_id", 0, qtype).Limit(4).Find(&ques)
-	c.JSON(http.StatusOK, ml.Succ(lang, ques))
+	db.Model(&model.SysPreQuestion{}).Where("flag=? and cat_id=?", 0, qtype).Limit(4).Find(&ques)
+	if len(ques) > 0 {
+		for _, v := range ques {
+			quesList = append(quesList, v.Content)
+		}
+	}
+	c.JSON(http.StatusOK, ml.Succ(lang, quesList))
 }
 
 func getSxValue(index int) string {
