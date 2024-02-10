@@ -169,6 +169,7 @@ func CalculateShenKe(c *gin.Context) {
 		sql = sql + " or type = ?"
 		flParams = append(flParams, sysCat.NameCn)
 	}
+	log.Println("查找四位分类的sql:", sql)
 	db.Model(&model.EliSwfl{}).Where(sql, flParams...).Find(&eliSwfls)
 
 	//用神判定 传入干支 返回 对应的索引 -1 就是失败,小于等于3就是对应人元、贵神、神将、地分
@@ -182,37 +183,6 @@ func CalculateShenKe(c *gin.Context) {
 	}
 
 	shen := yongshens[yongshenIndex]
-
-	// 然后再用地支算刑冲合害
-	// addedDzgx := make(map[string]bool) // 使用字符串作为键
-	// pairs, triplets := myform.UniqueCombinations(dizhis)
-	// for _, pair := range pairs {
-	// 	fmt.Println(pair[0], pair[1])
-	// 	var eliDzgx model.EliDzgx
-	// 	db.Where("dz in (?,?)", pair[0]+pair[1], pair[1]+pair[0]).First(&eliDzgx)
-
-	// 	uniqueKey := pair[0] + pair[1] // 构造一个唯一键，例如组合的地支
-	// 	if eliDzgx != (model.EliDzgx{}) && !addedDzgx[uniqueKey] {
-	// 		eliDzgxs = append(eliDzgxs, eliDzgx)
-	// 		addedDzgx[uniqueKey] = true // 标记这个唯一键已经添加
-	// 	}
-	// }
-
-	// for _, triplet := range triplets {
-	// 	// fmt.Println(triplet[0], triplet[1], triplet[2])
-
-	// 	var eliDzgx model.EliDzgx
-	// 	db.Where("dz in(?,?,?,?,?,?) ", triplet[0]+triplet[1]+triplet[2], triplet[0]+triplet[2]+triplet[1],
-	// 		triplet[1]+triplet[0]+triplet[2],
-	// 		triplet[1]+triplet[2]+triplet[0],
-	// 		triplet[2]+triplet[0]+triplet[1],
-	// 		triplet[2]+triplet[1]+triplet[0],
-	// 	).First(&eliDzgx)
-
-	// 	if eliDzgx != (model.EliDzgx{}) {
-	// 		eliDzgxs = append(eliDzgxs, eliDzgx)
-	// 	}
-	// }
 
 	_2combos_ := myform.UniqueCombination(2, dizhis, true)
 	_3combos_ := myform.UniqueCombination(3, dizhis, true)
@@ -232,8 +202,12 @@ func CalculateShenKe(c *gin.Context) {
 
 	fmt.Println(eliSwxys, eliDzgxs, eliSwwxs, eliWxws)
 
-	result := map[string]interface{}{"swxys": eliSwxys, "eliDzgxs": eliDzgxs,
-		"eliSwwxs": eliSwwxs, "eliWxws": eliWxws, "kongwang": kongwang, "shen": shen, "rumu": rumu}
+	//获取问题分类
+	var anstruct []model.SysCatStruct
+	db.Model(&model.SysCatStruct{}).Where("cat_id=? and flag=?", qtype, 0).Order("seq asc").Find(&anstruct)
+
+	result := map[string]interface{}{"swxys": eliSwxys, "eliDzgxs": eliDzgxs, "eliSwfls": eliSwfls,
+		"eliSwwxs": eliSwwxs, "eliWxws": eliWxws, "kongwang": kongwang, "shen": shen, "rumu": rumu, "struct": anstruct}
 
 	jsonData, err := json.Marshal(result)
 	if err != nil {

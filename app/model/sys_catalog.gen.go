@@ -30,3 +30,15 @@ type SysPreQuestion struct {
 func (*SysPreQuestion) TableName() string {
 	return "sys_pre_question"
 }
+
+type SysCatStruct struct {
+	ID       int64  `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	CatId string `gorm:"column:cat_id" json:"cat_id"`
+	Cntstruct string `gorm:"column:cntstruct" json:"cntstruct"`
+	Seq int `gorm:"column:seq" json:"seq"`
+	Flag int `gorm:"column:flag" json:"flag"`
+}
+
+func (*SysCatStruct) TableName() string {
+	return "sys_cat_struct"
+}
