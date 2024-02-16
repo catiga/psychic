@@ -51,6 +51,21 @@ var relationshipRules = map[string][]string{
 	"水": {"火", "克金"},
 }
 
+var shengRelation = map[string]string{
+	"木": "火",
+	"火": "土",
+	"土": "金",
+	"金": "水",
+	"水": "木",
+}
+var keRelation = map[string]string{
+	"木": "土",
+	"土": "水",
+	"水": "火",
+	"火": "金",
+	"金": "木",
+}
+
 func wuxingCompare(elements []string) map[string][]string {
 	result := make(map[string][]string)
 
@@ -266,32 +281,46 @@ func (Transform) CalculateWuxingRelationship(element1, element2 string) (string,
 	if element1 == element2 {
 		return "同", 0
 	}
-
-	// 检查第一个元素与第二个元素的生克关系
-	if rules, ok := relationshipRules[element1]; ok {
-		for _, rule := range rules {
-			if rule == element2 {
-				return "生", 1
-			}
-			if rule == "克"+element2 {
-				return "克", 1
-			}
+	//首先检查生关系
+	for key, value := range shengRelation {
+		if key == element1 && value == element2 {
+			return "生", 1
+		} else if key == element2 && value == element1 {
+			return "生", 2
 		}
 	}
 
-	// 检查第二个元素与第一个元素的生克关系
-	if rules, ok := relationshipRules[element2]; ok {
-		for _, rule := range rules {
-			if rule == element1 {
-				return "生", 2
-			}
-			if rule == "克"+element1 {
-				return "克", 2
-			}
+	for key, value := range keRelation {
+		if key == element1 && value == element2 {
+			return "克", 1
+		} else if key == element2 && value == element1 {
+			return "克", 2
 		}
 	}
 
-	return "无关系", 0
+	// if rules, ok := relationshipRules[element1]; ok {
+	// 	for _, rule := range rules {
+	// 		if rule == element2 {
+	// 			return "生", 1
+	// 		}
+	// 		if rule == "克"+element2 {
+	// 			return "克", 1
+	// 		}
+	// 	}
+	// }
+
+	// if rules, ok := relationshipRules[element2]; ok {
+	// 	for _, rule := range rules {
+	// 		if rule == element1 {
+	// 			return "生", 2
+	// 		}
+	// 		if rule == "克"+element1 {
+	// 			return "克", 2
+	// 		}
+	// 	}
+	// }
+
+	return "无关系", -1
 }
 
 func (t Transform) UniqueCombination(count int, eles []string, sort bool) []string {

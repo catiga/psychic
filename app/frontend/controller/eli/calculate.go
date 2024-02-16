@@ -107,6 +107,10 @@ func CalculateShenKe(c *gin.Context) {
 			sxVal_i := getSxValue(i)
 			sxVal_j := getSxValue(j)
 
+			if sx == -1 {
+				continue
+			}
+
 			sql := "r1 = ? and r2 = ? and relationship = ? and flag = ?"
 			params := make([]interface{}, 0)
 
