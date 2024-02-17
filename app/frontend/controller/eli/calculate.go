@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"eli/app/frontend/controller/chat"
 	"eli/app/model"
 	"eli/database"
 	ml "eli/middleware"
@@ -208,10 +209,18 @@ func CalculateShenKe(c *gin.Context) {
 
 	//获取问题分类
 	var anstruct []model.SysCatStruct
+	var ansangle []chat.JoinQuesAngl
 	db.Model(&model.SysCatStruct{}).Where("cat_id=? and flag=?", qtype, 0).Order("seq asc").Find(&anstruct)
+	if len(anstruct) > 0 {
+		for _, v := range anstruct {
+			ansangle = append(ansangle, chat.JoinQuesAngl{
+				Cntstruct: v.Cntstruct,
+			})
+		}
+	}
 
 	result := map[string]interface{}{"swxys": eliSwxys, "eliDzgxs": eliDzgxs, "eliSwfls": eliSwfls,
-		"eliSwwxs": eliSwwxs, "eliWxws": eliWxws, "kongwang": kongwang, "shen": shen, "rumu": rumu, "struct": anstruct}
+		"eliSwwxs": eliSwwxs, "eliWxws": eliWxws, "kongwang": kongwang, "shen": shen, "rumu": rumu, "struct": ansangle}
 
 	jsonData, err := json.Marshal(result)
 	if err != nil {
@@ -223,6 +232,10 @@ func CalculateShenKe(c *gin.Context) {
 
 	// eliCalInfo.ID, _ = util.Sf.GenerateID()
 	eliCalInfo.Param = dizhi
+	eliCalInfo.Wuxing = strings.Join(wuxings, "")
+	eliCalInfo.Wangshuai = strings.Join(wangshuais, "")
+	eliCalInfo.Yongyao = shen
+
 	eliCalInfo.Result = string(jsonData)
 	eliCalInfo.Type = 1
 	eliCalInfo.UserID = session.Id

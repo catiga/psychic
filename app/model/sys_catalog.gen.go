@@ -42,3 +42,15 @@ type SysCatStruct struct {
 func (*SysCatStruct) TableName() string {
 	return "sys_cat_struct"
 }
+
+type SysBgmeans struct {
+	ID       int64  `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	Key string `gorm:"column:key" json:"key"`
+	Meaning string `gorm:"column:meaning" json:"meaning"`
+	Type int `gorm:"column:type" json:"type"`
+	Flag int `gorm:"column:flag" json:"flag"`
+}
+
+func (*SysBgmeans) TableName() string {
+	return "sys_bgmeaning"
+}
