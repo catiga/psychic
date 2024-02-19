@@ -18,6 +18,8 @@ func Load(r *gin.RouterGroup) {
 	userGroup.POST("/login", user.Login)
 	userGroup.GET("/login_user_info", user.LoginUserInfo)
 	userGroup.POST("/handle_google_callback", user.HandleGoogleCallback)
+	userGroup.POST("/register_account", user.RegisterAccount)
+	userGroup.POST("/account_login", user.AccountLogin)
 
 	eliGroup := r.Group("/eli", interceptor.LoggerMiddleware(), interceptor.FrontendSignMiddleware(), interceptor.FrontendAuthMiddleware())
 	eliGroup.GET("/calculateFourPillars", eli.CalculateFourPillars)

@@ -14,6 +14,7 @@ type SessionToken struct {
 	Email string `json:"email"`
 	Addr  string `json:"addr"`
 	Type  int8   `json:"type"`
+	Name  string `json:"name"`
 }
 
 type AdminSessionToken struct {
@@ -31,6 +32,7 @@ func Macke(session *SessionToken) (token string, err error) { //生成jwt
 		"email": session.Email,
 		"addr":  session.Addr,
 		"type":  session.Type,
+		"name":  session.Name,
 		"iss":   "vocosmos",
 		"nbf":   time.Now().Unix(),
 		"exp":   time.Now().Add(time.Hour * 672).Unix(),
@@ -97,6 +99,7 @@ func ParseToken(token string) (session *SessionToken, err error) {
 	session.Email = claim["email"].(string) //强行转换为string类型 这个两个值可能都为空
 	session.Addr = claim["addr"].(string)   //强行转换为string类型 这个两个值可能都为空
 	session.Type = int8(claim["type"].(float64))
+	session.Name = claim["name"].(string)
 	return
 }
 
