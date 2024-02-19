@@ -37,7 +37,9 @@ func main() {
 	// g.GenerateModel("eli_swwx")
 	// g.GenerateModel("eli_wxws")
 	// g.GenerateModel("eli_swfl")
-	g.GenerateModel("dis_airdrop")
+	// g.GenerateModel("dis_airdrop")
+	// g.GenerateModel("sys_catalog")
+	// g.GenerateModel("account_user_info")
 	// g.ApplyBasic(g.GenerateModel("account_user_info"))
 
 	// Generate Type Safe API with Dynamic SQL defined on Querier interface for `model.User` and `model.Company`

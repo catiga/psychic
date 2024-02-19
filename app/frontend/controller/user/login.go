@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 )
@@ -77,20 +78,104 @@ func Login(c *gin.Context) {
 		accountUserInfo.Name = util.FormatEthereumAddress(address)
 		accountUserInfo.Address = address
 		accountUserInfo.CreateAt = &currentTime
-		accountUserInfo.Type = 1
+		accountUserInfo.Type = 1 //谷歌注册
 		accountUserInfo.IP = c.ClientIP()
 		accountUserInfo.Kyc = 1
 
 		db.Save(&accountUserInfo)
 	}
 
-	session := util.SessionToken{Id: accountUserInfo.ID, Email: "", Addr: accountUserInfo.Address, Type: int8(accountUserInfo.Type)}
+	session := util.SessionToken{Id: accountUserInfo.ID, Email: "", Addr: accountUserInfo.Address, Type: int8(accountUserInfo.Type), Name: ""}
 
 	token, _ := util.Macke(&session)
 
 	c.JSON(http.StatusOK, ml.Succ(lang, map[string]interface{}{"token": token}))
 
 	util.CacheDel(fmt.Sprintf(constant.KeyAddrSign, address))
+}
+
+func RegisterAccount(c *gin.Context) {
+
+	lang := c.GetHeader("I18n-Language")
+	name := c.PostForm("user_name")
+	pwd := c.PostForm("pwd")
+
+	db := database.DB
+
+	if name == "" {
+		c.JSON(http.StatusOK, ml.Fail(lang, "100016"))
+		return
+	}
+
+	if pwd == "" {
+		c.JSON(http.StatusOK, ml.Fail(lang, "100017"))
+		return
+	}
+
+	if utf8.RuneCountInString(name) < 6 || utf8.RuneCountInString(name) > 16 {
+		c.JSON(http.StatusOK, ml.Fail(lang, "100019"))
+		return
+	}
+
+	currentTime := time.Now()
+	var accountUserInfo model.AccountUserInfo
+
+	db.Where(" name = ? ", name).First(&accountUserInfo)
+
+	if accountUserInfo != (model.AccountUserInfo{}) {
+		c.JSON(http.StatusOK, ml.Fail(lang, "100018"))
+		return
+	}
+
+	accountUserInfo.Name = name
+	accountUserInfo.Pwd = util.ToMd5AndSalt(pwd)
+	accountUserInfo.CreateAt = &currentTime
+	accountUserInfo.Type = 2 //账号密码
+	accountUserInfo.IP = c.ClientIP()
+	accountUserInfo.Kyc = 1
+	db.Save(&accountUserInfo)
+
+	c.JSON(http.StatusOK, ml.Succ(lang, nil))
+
+}
+
+func AccountLogin(c *gin.Context) {
+
+	lang := c.GetHeader("I18n-Language")
+	name := c.PostForm("user_name")
+	pwd := c.PostForm("pwd")
+
+	db := database.DB
+
+	if name == "" {
+		c.JSON(http.StatusOK, ml.Fail(lang, "100016"))
+		return
+	}
+
+	if pwd == "" {
+		c.JSON(http.StatusOK, ml.Fail(lang, "100017"))
+		return
+	}
+
+	if utf8.RuneCountInString(name) < 6 || utf8.RuneCountInString(name) > 16 {
+		c.JSON(http.StatusOK, ml.Fail(lang, "100019"))
+		return
+	}
+
+	var accountUserInfo model.AccountUserInfo
+
+	db.Where(" name = ? ", name).First(&accountUserInfo)
+
+	if accountUserInfo == (model.AccountUserInfo{}) {
+		c.JSON(http.StatusOK, ml.Fail(lang, "100020"))
+		return
+	}
+
+	session := util.SessionToken{Id: accountUserInfo.ID, Email: "", Addr: accountUserInfo.Address, Type: int8(accountUserInfo.Type), Name: ""}
+
+	token, _ := util.Macke(&session)
+
+	c.JSON(http.StatusOK, ml.Succ(lang, map[string]interface{}{"token": token}))
 }
 
 func LoginUserInfo(c *gin.Context) {
