@@ -334,9 +334,7 @@ func buildPrompt(chars *model.SpwCharacter, chatType string, request common.Requ
 	}
 
 	backgroundContext += frontPromot
-	log.Println("打印用户背景问题：", backgroundContext)
-
-	backgroundContext += "\n用中文回答问题：" + question
+	backgroundContext += "\n用中文分析并对问题：'" + question + "' 做出回答。"
 	log.Println("Question with Context:", backgroundContext)
 	back = append(back, openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
@@ -426,13 +424,14 @@ func buildSwxy(calId string) (string, error) {
 	}
 
 	var resultData ResultData
-	log.Println("前置起课信息：", eci.Result)
+
 	err := json.Unmarshal([]byte(eci.Result), &resultData)
 	if err != nil {
 		return "", err
 	}
 
 	var prompt string
+	prompt += "背景信息：\n"
 	//获取系统象意
 	var bgMeanings []model.SysBgmeans
 	db.Model(&model.SysBgmeans{}).Where("flag!=? and (type=? or type=?)", -1, 1, 2).Find(&bgMeanings)
@@ -446,14 +445,12 @@ func buildSwxy(calId string) (string, error) {
 			}
 		}
 		if len(wuxingBg) > 0 {
-			prompt += "五行象意：\n" + wuxingBg
+			prompt += "五行象意：\n" + wuxingBg + "\n"
 		}
 		if len(dizhiBg) > 0 {
-			prompt += "地支象意：\n" + dizhiBg
+			prompt += "地支象意：\n" + dizhiBg + "\n"
 		}
 	}
-
-	log.Println("db获取的背景信息：", prompt)
 
 	// prompt = "背景信息："
 	// prompt += `
@@ -481,7 +478,7 @@ func buildSwxy(calId string) (string, error) {
 	// `
 
 	prompt += "起课信息：\n"
-	prompt += "以人元、贵神、神将、地分按顺序定义为本次起课的四个位置，简称为四位\n"
+	prompt += "将人元、贵神、神将、地分按顺序定义为本次起课的四个位置，以下简称为四位\n"
 	prompt += "第一位为人元，地支属性为" + strings.Split(eci.Param, "")[0] + "，五行属性为" + strings.Split(eci.Wuxing, "")[0] + "，旺衰属性为" + strings.Split(eci.Wangshuai, "")[0]
 	prompt += "第二位为贵神，地支属性为" + strings.Split(eci.Param, "")[1] + "，五行属性为" + strings.Split(eci.Wuxing, "")[1] + "，旺衰属性为" + strings.Split(eci.Wangshuai, "")[1]
 	prompt += "第三位为神将，地支属性为" + strings.Split(eci.Param, "")[2] + "，五行属性为" + strings.Split(eci.Wuxing, "")[2] + "，旺衰属性为" + strings.Split(eci.Wangshuai, "")[2]
@@ -550,20 +547,15 @@ func buildSwxy(calId string) (string, error) {
 		prompt += "空亡象意是没准备好，心里没底，还没发生的意思，本次起课的空亡信息为：" + resultData.Kongwang + "。"
 	}
 	prompt += "\n"
-	//时间四柱的角色，年柱代表长辈，领导，国家；月柱代表兄弟姐妹，竞争对手，朋友，同事；日柱代表关系近的朋友，配偶，自己；时柱代表子女，晚辈，下属
 
-	// prompt += "用中文回答问题，以四位的生克关系为主，并结合五行和天干地支象意，以及空亡入墓和刑冲合害信息，按分类输出分析结果，并且尽可能携带流年信息。\n"
-	prompt += "基于上面提供的背景信息和起课信息，以四位的生克关系为主，并结合对五行和天干地支象意、以及空亡入墓和刑冲合害等象意信息的理解，对问题进行分析，"
+	prompt += "基于上面提供的背景信息和起课信息，以四位的生克关系和四位的五行属性及地支属性，以及空亡入墓和刑冲合害等象意信息的理解，参考提供的五行和地支象意的背景信息"
 	if len(resultData.Struct) > 0 {
-		prompt += "包括但不限于以下几个重点方面："
+		prompt += "，尽量包括但不限于以下几个重点方面对问题进行分析："
 		var structInfo string
 		for index, v := range resultData.Struct {
 			structInfo += strconv.Itoa(index+1) + ":" + v.Cntstruct + "\n"
 		}
 		prompt += structInfo
 	}
-
-	ml.Log.Info("prompt :", prompt)
-
 	return prompt, nil
 }

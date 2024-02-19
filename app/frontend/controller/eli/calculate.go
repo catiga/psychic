@@ -61,6 +61,16 @@ func CalculateShenKe(c *gin.Context) {
 	dizhi := c.PostForm("dizhi")
 	kongwang := c.PostForm("kongwang") //贵神、人元
 	rumu := c.PostForm("rumu")         //神将
+
+	typesStr := c.PostForm("type")
+	randomNumStr := c.PostForm("rand")
+
+	types, err := strconv.ParseInt(typesStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusOK, ml.Fail(lang, "100006"))
+		return
+	}
+
 	token := c.GetHeader("token")
 	session, _ := util.ParseToken(token)
 
@@ -237,7 +247,9 @@ func CalculateShenKe(c *gin.Context) {
 	eliCalInfo.Yongyao = shen
 
 	eliCalInfo.Result = string(jsonData)
-	eliCalInfo.Type = 1
+	eliCalInfo.Type = int32(types)
+	eliCalInfo.RandNum = randomNumStr
+
 	eliCalInfo.UserID = session.Id
 	eliCalInfo.CreateAt = time.Now()
 
