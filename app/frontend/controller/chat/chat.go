@@ -103,12 +103,17 @@ func parseRequestMsg(body []byte) (c common.Request, e error) {
 }
 
 func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs int64) {
-	db := database.DB
-
-	frontPromot, err := buildSwxy(request.CalId)
+	eciInfo, err := getCalBgInfo(request.CalId)
 
 	if err != nil {
+		rp := makeReply(common.CODE_ERR_MISSING_PREREQUISITE_INFO, err.Error(), timeNowHs, "", request.Timestamp, "")
+		ws.WriteJSON(rp)
+		return
+	}
 
+	frontPromot, err := buildSwxy(eciInfo)
+
+	if err != nil {
 		rp := makeReply(common.CODE_ERR_MISSING_PREREQUISITE_INFO, err.Error(), timeNowHs, "", request.Timestamp, "")
 		ws.WriteJSON(rp)
 		return
@@ -120,7 +125,7 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 	question := request.Data
 	// + " ;请根据起课信息和象意,做出占卜回答,回答格式应该包含【总言】和【流年断事】两段话"
 
-	fmt.Println("用户问题:", question)
+	db := database.DB
 
 	var character model.SpwCharacter
 	err = db.Model(&model.SpwCharacter{}).Where("lan = ? and code = ? and flag != ?", language, ascode, -1).Last(&character).Error
@@ -162,12 +167,7 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 	if character.CharNature > 0 && character.CharNature <= 200 {
 		defaultTemp = float64(character.CharNature) / 100
 	}
-	fmt.Println("当前角色的温度设定：", defaultTemp)
 
-	// if character.CharNature >= 0 && character.CharNature <= 100 {
-	// 	vs := float64(character.CharNature) / 100
-	// 	defaultTemp = math.Round(vs*10) / 10
-	// }
 	req := openai.ChatCompletionRequest{
 		Model: defaultModelName, //openai.GPT3Dot5Turbo,
 		// MaxTokens: 4096,
@@ -412,23 +412,28 @@ type ResultData struct {
 	Kongwang string
 }
 
-func buildSwxy(calId string) (string, error) {
-
+func getCalBgInfo(calId string) (*model.EliCalInfo, error) {
 	db := database.GetDb()
 	var eci model.EliCalInfo
 	//查询出前置条件
 	db.First(&eci, calId)
 
 	if eci == (model.EliCalInfo{}) {
-		return "", errors.New("未找到前置信息")
+		return nil, errors.New("未找到前置信息")
 	}
 
+	return &eci, nil
+}
+
+func buildSwxy(eci *model.EliCalInfo) (string, error) {
 	var resultData ResultData
 
 	err := json.Unmarshal([]byte(eci.Result), &resultData)
 	if err != nil {
 		return "", err
 	}
+
+	db := database.GetDb()
 
 	var prompt string
 	prompt += "背景信息：\n"
