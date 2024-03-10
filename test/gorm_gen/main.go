@@ -18,7 +18,7 @@ func main() {
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode
 	})
 
-	gormdb, _ := gorm.Open(mysql.Open("root:SDFD12312dddasdas1#@123123@(123.249.126.212:3306)/spirit_war?charset=utf8mb4&parseTime=True&loc=Local"))
+	gormdb, _ := gorm.Open(mysql.Open("root:SDFD12312dddasdas1#@123123@(123.249.126.212:3306)/eli?charset=utf8mb4&parseTime=True&loc=Local"))
 	g.UseDB(gormdb)
 
 	// Generate basic type-safe DAO API for struct `model.User` following conventions
@@ -40,6 +40,9 @@ func main() {
 	// g.GenerateModel("dis_airdrop")
 	// g.GenerateModel("sys_catalog")
 	// g.GenerateModel("account_user_info")
+	// g.GenerateModel("eli_agent")
+	// g.GenerateModel("eli_order")
+	// g.GenerateModel("eli_payment")
 	// g.ApplyBasic(g.GenerateModel("account_user_info"))
 
 	// Generate Type Safe API with Dynamic SQL defined on Querier interface for `model.User` and `model.Company`

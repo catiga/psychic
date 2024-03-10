@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -78,4 +79,35 @@ func (s *Snowflake) GenerateID() (int64, error) {
 		s.sequence
 
 	return ID, nil
+}
+
+func (s *Snowflake) GenerateStrID() (string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	currentTime := time.Now().UnixNano() / 1e6
+
+	if currentTime == s.timestamp {
+		s.sequence = (s.sequence + 1) & maxSequence
+		if s.sequence == 0 {
+			for currentTime <= s.timestamp {
+				currentTime = time.Now().UnixNano() / 1e6
+			}
+		}
+	} else {
+		s.sequence = 0
+	}
+
+	if currentTime < s.timestamp {
+		return "", fmt.Errorf("clock is moving backwards")
+	}
+
+	s.timestamp = currentTime
+	ID := ((currentTime - epoch) << timestampLeftShift) |
+		(s.workerID << workerLeftShift) |
+		s.sequence
+
+	result := strconv.FormatInt(ID, 10) // 第二个参数10表示十进制
+
+	return result, nil
 }

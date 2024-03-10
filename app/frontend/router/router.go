@@ -33,6 +33,10 @@ func Load(r *gin.RouterGroup) {
 	disGroup.POST("/check_white", dis.CheckWhite)
 	disGroup.POST("/get_maker_proof", dis.GetMakerProof)
 
+	ordGroup := r.Group("/ord", interceptor.LoggerMiddleware(), interceptor.FrontendSignMiddleware(), interceptor.FrontendAuthMiddleware())
+	ordGroup.GET("/pre_order", eli.PreOrder)
+	ordGroup.POST("/calculateShenKeOrder", eli.CalculateShenKeOrder)
+
 	wsGroup := r.Group("/ws")
 
 	wsGroup.GET("chat", chat.Chat)

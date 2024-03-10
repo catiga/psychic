@@ -20,6 +20,7 @@ type EliCalInfo struct {
 	UserID   int64     `gorm:"column:user_id" json:"user_id"`
 	CreateAt time.Time `gorm:"column:create_at" json:"create_at"`
 	RandNum  string    `gorm:"column:rand_num" json:"rand_num"`
+	OrderID  int64     `gorm:"column:order_id" json:"order_id"`
 }
 
 // TableName EliCalInfo's table name

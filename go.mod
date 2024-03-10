@@ -2,7 +2,7 @@ module eli
 
 go 1.20
 
-require github.com/spf13/viper v1.18.1
+require github.com/spf13/viper v1.18.2
 
 require (
 	cloud.google.com/go/compute v1.23.3 // indirect
@@ -10,6 +10,8 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.2.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
+	github.com/baidubce/bce-qianfan-sdk/go/qianfan v0.0.2 // indirect
+	github.com/baidubce/bce-sdk-go v0.9.164 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
@@ -57,6 +59,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/urfave/cli/v2 v2.26.0 // indirect
+	github.com/wechatpay-apiv3/wechatpay-go v0.2.18 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.46.1 // indirect
