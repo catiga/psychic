@@ -5,6 +5,7 @@ import (
 	"eli/config"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -20,10 +21,18 @@ const pineuri = "https://eli-412cf08.svc.gcp-starter.pinecone.io"
 
 var apikey = config.Get().Openai.Apikey
 
+type RpError struct {
+	Message string
+	Type    string
+	Param   interface{}
+	Code    string
+}
+
 type GPT struct {
 }
 
 type EmbedResult struct {
+	Error  *RpError
 	Object string                 `json:"object"`
 	Model  string                 `json:"model"`
 	Usage  map[string]interface{} `json:"usage"`
@@ -59,7 +68,7 @@ type EmbededUpsertData struct {
 	CharCode   string
 }
 
-func (*GPT) Embedding(content string, model string) (*EmbedResult, error) {
+func (*GPT) Embedding(content string, model string, key string) (*EmbedResult, error) {
 	body := map[string]string{
 		"input": content,
 		"model": model,
@@ -73,7 +82,11 @@ func (*GPT) Embedding(content string, model string) (*EmbedResult, error) {
 	}
 
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", "Bearer "+apikey)
+	if len(key) > 0 {
+		request.Header.Set("Authorization", "Bearer "+key)
+	} else {
+		request.Header.Set("Authorization", "Bearer "+apikey)
+	}
 
 	client := &http.Client{}
 	response, err := client.Do(request)
@@ -95,12 +108,12 @@ func (*GPT) Embedding(content string, model string) (*EmbedResult, error) {
 	return &v, nil
 }
 
-func (ins *GPT) BatchUpsert(data *EmbededUpsertData) error {
+func (ins *GPT) BatchUpsert(data *EmbededUpsertData, replaceKey string) error {
 
 	// var emb []EmbedResult
 
 	content := "question:`" + data.Question + "`;\n reply: `" + data.Reply + "`"
-	emb, err := ins.Embedding(content, defaultModel)
+	emb, err := ins.Embedding(content, defaultModel, replaceKey)
 	log.Println("build gpt embedding:", content, err)
 	if err != nil {
 		return err
@@ -179,11 +192,14 @@ func (*GPT) SaveChatEmbeddings(data *EmbedResult, richData *EmbededUpsertData) e
 	return nil
 }
 
-func (ins *GPT) Query(id string, question string, filter map[string]string, limitation int) ([]EmbedQueryResult, error) {
+func (ins *GPT) Query(id string, question string, filter map[string]string, limitation int, replaceKey string) ([]EmbedQueryResult, error) {
 
-	r, err := ins.Embedding(question, defaultModel)
+	r, err := ins.Embedding(question, defaultModel, replaceKey)
 	if err != nil {
 		return nil, err
+	}
+	if r.Error != nil {
+		return nil, fmt.Errorf("code:%s, error:%s", r.Error.Code, r.Error.Message)
 	}
 
 	filter["version"] = "2.0" //固定查询

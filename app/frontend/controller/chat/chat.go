@@ -161,7 +161,13 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 	c := openai.NewClient(defaultModelKey)
 	ctx := context.Background()
 
-	background := buildPrompt(&character, chatType, request, question, frontPromot)
+	background, err := buildPrompt(&character, chatType, request, question, frontPromot, defaultModelKey)
+
+	if err != nil {
+		rp := makeReplyUseMsg(common.CODE_ERR_GPT_COMMON, err.Error(), timeNowHs, "", request.Timestamp, "")
+		ws.WriteJSON(rp)
+		return
+	}
 	defaultTemp := 0.5
 
 	if character.CharNature > 0 && character.CharNature <= 200 {
@@ -234,7 +240,7 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 					DevId:      chat.DevID,
 					CharId:     uint64(chat.CharID),
 					CharCode:   chat.CharCode,
-				})
+				}, defaultModelKey)
 			}(&chat)
 
 			rp := makeReply(common.CODE_ERR_GPT_COMPLETE, "complete", timeNowHs, "", request.Timestamp, "")
@@ -257,7 +263,7 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 }
 
 // frontPromot 是起课背景
-func buildPrompt(chars *model.SpwCharacter, chatType string, request common.Request, question string, frontPromot string) []openai.ChatCompletionMessage {
+func buildPrompt(chars *model.SpwCharacter, chatType string, request common.Request, question string, frontPromot string, replaceKey string) ([]openai.ChatCompletionMessage, error) {
 	var back []openai.ChatCompletionMessage
 
 	db := database.GetDb()
@@ -275,10 +281,14 @@ func buildPrompt(chars *model.SpwCharacter, chatType string, request common.Requ
 	if len(request.DevId) > 0 {
 		metaFilter["devid"] = request.DevId
 	}
-	embResults, err := gpt.Query("", question, metaFilter, 3)
+	embResults, err := gpt.Query("", question, metaFilter, 3, replaceKey)
+
+	if err != nil {
+		return nil, err
+	}
 
 	backgroundContext := ""
-	if err == nil && len(embResults) > 0 {
+	if len(embResults) > 0 {
 		var ids []uint64
 		for _, v := range embResults {
 			if v.Metadata["user"] == strconv.FormatUint(uint64(request.UserId), 10) || v.Metadata["devid"] == request.DevId {
@@ -340,7 +350,7 @@ func buildPrompt(chars *model.SpwCharacter, chatType string, request common.Requ
 		Role:    openai.ChatMessageRoleUser,
 		Content: backgroundContext,
 	})
-	return back
+	return back, nil
 }
 
 func generateChatHash(timeHs int64, request common.Request) string {
@@ -356,6 +366,16 @@ func generateChatHash(timeHs int64, request common.Request) string {
 func makeReply(code int64, msg string, timeHs int64, chatId string, replyTs int64, content string) *ml.ResponseData {
 
 	r := ml.Res("zh-CN", strconv.FormatInt(code, 10),
+		map[string]interface{}{"Id": chatId,
+			"ReplyTs": replyTs,
+			"Content": content})
+
+	return &r
+}
+
+func makeReplyUseMsg(code int64, msg string, timeHs int64, chatId string, replyTs int64, content string) *ml.ResponseData {
+
+	r := ml.ResWithMsg("zh-CN", strconv.FormatInt(code, 10), msg,
 		map[string]interface{}{"Id": chatId,
 			"ReplyTs": replyTs,
 			"Content": content})

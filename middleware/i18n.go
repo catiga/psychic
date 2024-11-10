@@ -65,3 +65,19 @@ func Res(lang string, code string, data interface{}) ResponseData {
 		Data:    data,
 	}
 }
+
+func ResWithMsg(lang string, code, message string, data interface{}) ResponseData {
+	if len(message) > 0 {
+		return ResponseData{
+			Code:    code,
+			Message: message,
+			Data:    data,
+		}
+	} else {
+		return ResponseData{
+			Code:    code,
+			Message: getTranslatedText(code, lang),
+			Data:    data,
+		}
+	}
+}
