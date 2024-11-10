@@ -83,6 +83,7 @@ func (*GPT) Embedding(content string, model string, key string) (*EmbedResult, e
 
 	request.Header.Set("Content-Type", "application/json")
 	if len(key) > 0 {
+		log.Println("use the replaced key ", key)
 		request.Header.Set("Authorization", "Bearer "+key)
 	} else {
 		request.Header.Set("Authorization", "Bearer "+apikey)
