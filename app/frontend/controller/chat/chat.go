@@ -161,7 +161,7 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 	c := openai.NewClient(defaultModelKey)
 	ctx := context.Background()
 
-	background, err := buildPrompt(&character, chatType, request, question, frontPromot, defaultModelKey)
+	background, err := buildPrompt(&character, chatType, request, question, frontPromot, defaultModelName, defaultModelKey)
 
 	if err != nil {
 		rp := makeReplyUseMsg(common.CODE_ERR_GPT_COMMON, err.Error(), timeNowHs, "", request.Timestamp, "")
@@ -240,7 +240,7 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 					DevId:      chat.DevID,
 					CharId:     uint64(chat.CharID),
 					CharCode:   chat.CharCode,
-				}, defaultModelKey)
+				}, defaultModelName, defaultModelKey)
 			}(&chat)
 
 			rp := makeReply(common.CODE_ERR_GPT_COMPLETE, "complete", timeNowHs, "", request.Timestamp, "")
@@ -263,7 +263,7 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 }
 
 // frontPromot 是起课背景
-func buildPrompt(chars *model.SpwCharacter, chatType string, request common.Request, question string, frontPromot string, replaceKey string) ([]openai.ChatCompletionMessage, error) {
+func buildPrompt(chars *model.SpwCharacter, chatType string, request common.Request, question string, frontPromot string, modelName, replaceKey string) ([]openai.ChatCompletionMessage, error) {
 	var back []openai.ChatCompletionMessage
 
 	db := database.GetDb()
@@ -281,7 +281,7 @@ func buildPrompt(chars *model.SpwCharacter, chatType string, request common.Requ
 	if len(request.DevId) > 0 {
 		metaFilter["devid"] = request.DevId
 	}
-	embResults, err := gpt.Query("", question, metaFilter, 3, replaceKey)
+	embResults, err := gpt.Query("", question, metaFilter, 3, modelName, replaceKey)
 
 	if err != nil {
 		return nil, err

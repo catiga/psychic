@@ -111,12 +111,12 @@ func (*GPT) Embedding(content string, model string, key string) (*EmbedResult, e
 	return &v, nil
 }
 
-func (ins *GPT) BatchUpsert(data *EmbededUpsertData, replaceKey string) error {
+func (ins *GPT) BatchUpsert(data *EmbededUpsertData, modelName, replaceKey string) error {
 
 	// var emb []EmbedResult
 
 	content := "question:`" + data.Question + "`;\n reply: `" + data.Reply + "`"
-	emb, err := ins.Embedding(content, defaultModel, replaceKey)
+	emb, err := ins.Embedding(content, modelName, replaceKey)
 	log.Println("build gpt embedding:", content, err)
 	if err != nil {
 		return err
@@ -195,9 +195,9 @@ func (*GPT) SaveChatEmbeddings(data *EmbedResult, richData *EmbededUpsertData) e
 	return nil
 }
 
-func (ins *GPT) Query(id string, question string, filter map[string]string, limitation int, replaceKey string) ([]EmbedQueryResult, error) {
+func (ins *GPT) Query(id string, question string, filter map[string]string, limitation int, modelName, replaceKey string) ([]EmbedQueryResult, error) {
 
-	r, err := ins.Embedding(question, defaultModel, replaceKey)
+	r, err := ins.Embedding(question, modelName, replaceKey)
 	if err != nil {
 		return nil, err
 	}
