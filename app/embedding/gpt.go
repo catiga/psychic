@@ -99,6 +99,8 @@ func (*GPT) Embedding(content string, model string, key string) (*EmbedResult, e
 
 	data, _ := io.ReadAll(response.Body)
 
+	log.Println("embedding response: ", string(data))
+
 	var v EmbedResult
 	err = json.Unmarshal(data, &v)
 
