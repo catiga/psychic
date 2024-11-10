@@ -88,7 +88,7 @@ func (*GPT) Embedding(content string, model string, key string) (*EmbedResult, e
 	} else {
 		request.Header.Set("Authorization", "Bearer "+apikey)
 	}
-
+	log.Println("embedding request: ", request)
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
