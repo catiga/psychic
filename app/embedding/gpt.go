@@ -14,7 +14,7 @@ import (
 )
 
 const uri = "https://api.openai.com"
-const defaultModel = "text-embedding-ada-002"
+const embeddingModel = "text-embedding-ada-002"
 
 const pinekey = "2fc2b6b8-375c-45d1-a05d-2b43c7c26195"
 const pineuri = "https://eli-412cf08.svc.gcp-starter.pinecone.io"
@@ -71,7 +71,8 @@ type EmbededUpsertData struct {
 func (*GPT) Embedding(content string, model string, key string) (*EmbedResult, error) {
 	body := map[string]string{
 		"input": content,
-		"model": model,
+		// "model": model,
+		"model": embeddingModel,
 	}
 	dataBytes, _ := json.Marshal(body)
 	request, err := http.NewRequest(http.MethodPost, uri+"/v1/embeddings", bytes.NewBuffer(dataBytes))
