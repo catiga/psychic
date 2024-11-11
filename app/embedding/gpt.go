@@ -14,7 +14,7 @@ import (
 )
 
 // const uri = "https://api.openai.com"
-const uri = "https://lonlie.plus7.plus/v1"
+const uri = "https://lonlie.plus7.plus"
 const embeddingModel = "text-embedding-ada-002"
 
 const pinekey = "2fc2b6b8-375c-45d1-a05d-2b43c7c26195"

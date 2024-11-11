@@ -158,7 +158,11 @@ func RequestGPT(ws *websocket.Conn, mt int, request common.Request, timeNowHs in
 		log.Println("replace default model：", defaultModelName)
 	}
 
-	c := openai.NewClient(defaultModelKey)
+	// c := openai.NewClient(defaultModelKey)
+
+	config := openai.DefaultConfig(defaultModelKey)
+	config.BaseURL = "https://lonlie.plus7.plus/v1"
+	c := openai.NewClientWithConfig(config)
 	ctx := context.Background()
 
 	background, err := buildPrompt(&character, chatType, request, question, frontPromot, defaultModelName, defaultModelKey)
